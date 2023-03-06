@@ -6,7 +6,7 @@ MAGIC_NUMBER = 10  # Number of posts in a page.
 
 
 def index(request):
-    posts = Post.objects.order_by('-pub_date')[:10]
+    posts = Post.objects.order_by('-pub_date')[:MAGIC_NUMBER]
     context = {
         'posts': posts,
     }
