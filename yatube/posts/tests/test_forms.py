@@ -6,8 +6,12 @@ from ..models import Post, Group, User
 
 
 class PostFormTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user = User.objects.create(username='auth')
+
     def setUp(self):
-        self.user = User.objects.create(username='auth')
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
