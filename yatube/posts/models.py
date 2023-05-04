@@ -18,7 +18,11 @@ class Post(models.Model):
         verbose_name='Текст',
         help_text='Текст вашего поста'
     )
-    pub_date = models.DateTimeField(auto_now_add=True)
+    pub_date = models.DateTimeField(
+        'Дата публикации',
+        auto_now_add=True,
+        db_index=True,
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

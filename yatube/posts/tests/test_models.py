@@ -31,7 +31,7 @@ class PostModelTest(TestCase):
         """Verbose_name in the fields is the same as expected."""
         field_verboses = {
             'text': 'Текст',
-            'pub_date': 'pub date',
+            'pub_date': 'Дата публикации',
             'author': 'author',
             'group': 'Укажите название вашей группы',
         }

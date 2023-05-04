@@ -3,6 +3,7 @@ import tempfile
 
 from django import forms
 from django.conf import settings
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
@@ -36,6 +37,7 @@ class PostPagesTest(TestCase):
         )
 
     def setUp(self):
+        cache.clear()
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
@@ -170,6 +172,15 @@ class PostPagesTest(TestCase):
             Comment.objects.filter(text='Тестовый коммент').exists()
         )
 
+    def test_check_cache(self):
+        """Check cache."""
+        response = self.guest_client.get(reverse('posts:index'))
+        resp_1 = response.content
+        Post.objects.get(id=1).delete()
+        response_2 = self.guest_client.get(reverse('posts:index'))
+        resp_2 = response_2.content
+        self.assertEqual(resp_1, resp_2)
+
 
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class TaskPagesTests(TestCase):
@@ -208,6 +219,7 @@ class TaskPagesTests(TestCase):
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
+        cache.clear()
         self.guest_client = Client()
 
     def test_image_in_group_list_page(self):
