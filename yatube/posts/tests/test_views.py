@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from ..models import Post, Group
+from ..models import Post, Group, Comment
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -29,6 +29,10 @@ class PostPagesTest(TestCase):
             author=cls.user,
             text='Тестовый пост',
             group=cls.group,
+        )
+        cls.comment = Comment.objects.create(
+            author=cls.user,
+            text='Тестовый комментарий',
         )
 
     def setUp(self):
@@ -145,6 +149,26 @@ class PostPagesTest(TestCase):
                 response = self.authorized_client.get(value)
                 form_field = response.context["page_obj"]
                 self.assertNotIn(expected, form_field)
+
+    def test_comment_correct_context(self):
+        """A valid comment form creates a post entry."""
+        comments_count = Comment.objects.count()
+        form_data = {'text': 'Тестовый коммент'}
+        response = self.authorized_client.post(
+            reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
+            data=form_data,
+            follow=True,
+        )
+        self.assertRedirects(
+            response, reverse(
+                'posts:post_detail',
+                kwargs={'post_id': self.post.id}
+            )
+        )
+        self.assertEqual(Comment.objects.count(), comments_count + 1)
+        self.assertTrue(
+            Comment.objects.filter(text='Тестовый коммент').exists()
+        )
 
 
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
