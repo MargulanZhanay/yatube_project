@@ -4,7 +4,6 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-handler404 = 'core.views.page_not_found'
 
 urlpatterns = [
     path('', include('posts.urls', namespace='posts')),
@@ -16,6 +15,10 @@ urlpatterns = [
     path('auth/', include('django.contrib.auth.urls')),
     path('about/', include('about.urls', namespace='about')),
 ]
+
+handler404 = "core.views.page_not_found"
+handler500 = 'core.views.server_error'
+handler403 = 'core.views.permission_denied'
 
 if settings.DEBUG:
     urlpatterns += static(
