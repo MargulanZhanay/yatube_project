@@ -9,7 +9,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from ..models import Comment, Group, Post
+from ..models import Comment, Group, Post, Follow
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -180,6 +180,35 @@ class PostPagesTest(TestCase):
         response_2 = self.guest_client.get(reverse('posts:index'))
         resp_2 = response_2.content
         self.assertEqual(resp_1, resp_2)
+
+    def test_follow_page(self):
+        """Follow/Unfollow check and featured posts page."""
+        response = self.authorized_client.get(reverse("posts:follow_index"))
+        self.assertEqual(len(response.context['page_obj']), 0)
+
+        new_author = User.objects.create(username='test')
+        self.authorized_client.post(
+            reverse('posts:profile_follow', kwargs={'username': new_author})
+        )
+        self.assertIs(
+            Follow.objects.filter(user=self.user, author=new_author).exists(),
+            True
+        )
+        outsider = User.objects.create(username="NoName")
+        self.authorized_client.force_login(outsider)
+        self.assertIs(
+            Follow.objects.filter(user=outsider, author=new_author).exists(),
+            False
+        )
+        # Проверка отписки от автора поста
+        self.authorized_client.force_login(self.user)
+        self.authorized_client.post(
+            reverse("posts:profile_unfollow", kwargs={"username": new_author})
+        )
+        self.assertIs(
+            Follow.objects.filter(user=self.user, author=new_author).exists(),
+            False
+        )
 
 
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
